@@ -81,11 +81,6 @@ h1, h2 {
 	margin-top: 30px;
 }
 
-#intro textarea {
-	font-size: 14px;
-	xoutline-color: none !important;
-}
-
 p#wanderp {
 	margin: 30px 0;
 	padding-top: 0;
@@ -162,17 +157,15 @@ p#wanderp label {font-size: 14px;	}
 
 #textwrap {
 	width: 1000px;
-	xborder: 1px solid #999;	
+	margin-top: 25px;
 }
 
 #selecttext {
-	width: 300px;
+	width: 200px;
 	float: left;	
 	margin: auto;
-	margin-left: 175px;
-	xborder: 1px solid #999;
-	xfont-size: 16px;
-	xfloat: left;
+	padding-top: 40px;
+	margin-left: 225px;
 	text-align: left;
 	line-height: 20px;
 }
@@ -182,9 +175,10 @@ p#wanderp label {font-size: 14px;	}
 }
 
 #intro textarea {
+	font-size: 14px;	
 	resize: none;
 	width: 300px;
-	height: 140px;
+	height: 100px;
 	border: 1px solid #000;
 	margin: 0;
 	padding: 2;
@@ -261,7 +255,6 @@ p#wanderp label {font-size: 14px;	}
 
 #header h2 span {
 	background-color: #fff;
-	xborder: 1px solid #ddd;
 	color: #000;
 	margin: 0px;
 	font-size: 16px;
@@ -426,11 +419,8 @@ input[type="checkbox"], input[type="submit"] {
 }
 
 #options p input {
-	xborder: 1px solid #000;
-	xcolor: #000;
 	margin: 0;
 	margin-right: 10px;
-	xbackground-color: #fff;
 }
 
 
@@ -662,17 +652,21 @@ input[type="checkbox"], input[type="submit"] {
 	
 	<div id="textwrap">
 		<p id="selecttext">
-			<input type="radio" name="textchoice" id="hanselgretel" /> <label for="hanselgretel">Hansel and Gretel (Brothers Grimm)</label><br>			
-			<!-- <input type="radio" name="textchoice" id="beowulf" /> <label for="beowulf">Beowulf</label><br> -->
-			<input type="radio" name="textchoice" id="gillman" /> <label for="gillman">The Yellow Wallpaper (Gillman)</label><br>
-			<input type="radio" name="textchoice" id="kafka" /> <label for="kafka">In the Penal Colony (Kafka)</label><br>
-			<!-- <input type="radio" name="textchoice" id="hesse" /> <label for="hesse">Siddhartha by Hesse</label><br> -->
-			<!-- <input type="radio" name="textchoice" id="wilde" /> <label for="wilde">Dorian Gray by Wilde</label><br> -->
-			<!-- <input type="radio" name="textchoice" id="conrad" /> <label for="conrad">Heart of Darkness by Conrad</label><br> -->
-			<input type="radio" name="textchoice" id="vonnegut" /> <label for="vonnegut">2 B R 0 2 B (Vonnegut)</label><br>
-			<input type="radio" name="textchoice" id="borges" /> <label for="borges">The Library of Babel (Borges)</label><br>
-			<input type="radio" name="textchoice" id="stevenson" /> <label for="stevenson">Jekyll &amp; Hyde (Stevenson)</label><br>
-			<input type="radio" checked name="textchoice" id="own" /> <label for="own">Your own text: paste in box →</label>
+		  <select name="selecttext">
+			<option selected value="own">Your own text →</option>
+		  <optgroup label="Or choose an example text:">			
+			<option value="hanselgretel">Hansel and Gretel (Brothers Grimm)</option>
+			<!-- <option value="beowulf">Beowulf</option> -->
+			<option value="gillman">The Yellow Wallpaper (Gillman)</option>
+			<option value="kafka">In the Penal Colony (Kafka)</option>
+			<!-- <option value="hesse">Siddhartha (Hesse)</option> -->
+			<!-- <option value="wilde">Dorian Gray (Wilde)</option> -->
+			<!-- <option value="conrad">Heart of Darkness (Conrad)</option> -->
+			<option value="vonnegut">2 B R 0 2 B (Vonnegut)</option>
+			<option value="borges">The Library of Babel (Borges)</option>
+			<option value="stevenson">Jekyll &amp; Hyde (Stevenson)</option>
+			 </optgroup>
+		  </select>
 		</p>
 		
 		<textarea id="text" placeholder="Paste your text here."></textarea>
@@ -689,7 +683,7 @@ input[type="checkbox"], input[type="submit"] {
 	<span id="loading">&nbsp;</span></p>
 
 	<p id="contact">
-		An experiment by <a href="http://mariandoerk.de/">Marian Dörk</a> and <a href="http://www.cf.ac.uk/encap/contactsandpeople/profiles/knight_dawn.html">Dawn Knight</a> at Newcastle University<br>
+		By <a href="http://mariandoerk.de/">Marian Dörk</a> and <a href="https://www.cardiff.ac.uk/people/view/142032-knight-dawn">Dawn Knight</a> carried out when at <a href="https://www.ncl.ac.uk">Newcastle University</a><br>
 		funded by the RCUK Digital Economy programme’s <a href="http://www.patina.ac.uk/">PATINA project</a>.<br>
 		More details about the concept and methods are in this <a href="http://mariandoerk.de/wordwanderer/corpora2015.pdf">article</a>.<br>
 		The code of the WordWanderer prototype is on <a href="https://github.com/nrchtct/WordWanderer">GitHub</a>.
@@ -841,8 +835,8 @@ function check_text() {
 	var text = $("#text").val();
 	var textA = text.split(" ");;
 	
-	var textchoice = $('#selecttext input[type=radio]:checked').prop("id");
-		
+	var textchoice = $('#selecttext select').prop("value");
+	
 	if (textA.length < min_text_length && textchoice=="own") {
 		$("#tooshort").addClass("active");
 		$("#wander").addClass("disabled");
@@ -863,7 +857,7 @@ $("#wander").click(function(){
 	var text = $("#text").val();
 	var textA = text.split(" ");;
 
-	var textchoice = $('#selecttext input[type=radio]:checked').prop("id");
+	var textchoice = $('#selecttext select').prop("value");
 
 	if (textA.length > min_text_length || textchoice!="own") {		
 		$("#loading").addClass("active");
