@@ -1,0 +1,1983 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>WordWanderer – take your text for a walk</title>
+<link rel="icon" type="image/png" href="favicon.png?v=2">
+<script src="js/jquery-1.10.2.min.js"></script>
+<script src="js/jspos-0.2.2/lexer.js"></script>
+<script src="js/jspos-0.2.2/lexicon.js"></script>
+<script src="js/jspos-0.2.2/POSTagger.js"></script>
+<script src="js/prefixfree.min.js"></script>
+
+<style type="text/css" media="screen">
+
+body {
+	font-family: "HelveticaNeueLight", "HelveticaNeue-Light", "Helvetica Neue Light", "HelveticaNeue", "Helvetica Neue",  "Helvetica", "Arial", sans-serif;
+	font-weight: 200;
+	margin: 0;
+	font-size: 16px;
+	width: 1000px;
+	height: 750px;
+	margin: auto;
+	background-color: #eee;
+	overflow-y: scroll;
+}
+
+#intro p img {
+	margin: -10px 10px 10px 175px;
+	float: left;
+	border-radius: 5px;
+}
+
+* {
+	xborder: 1px solid #999;
+}
+
+a, a:link, a:visited, a:active {
+	color: #000;
+}
+
+h1, h2 {
+	font-weight: 200;
+}
+
+
+/* INTRO */
+
+#intro {
+	border: 1px solid transparent;
+	text-align: center;	
+	position: absolute;
+	width: 1000px;
+	height: 750px;
+	background: #eee url("img/bg.svg") no-repeat top center;
+	background-size: 1000px 750px;	
+	z-index: 30;	
+	transition: opacity .5s ease-in-out;
+}
+
+#intro h1, #intro h2 {
+	width: 650px;
+	margin: auto;
+	padding: 0;
+	text-align: right;
+}
+
+#intro h1 {
+	font-size: 40px;
+	line-height: 45px;
+	margin-top: 25px;
+}
+
+#intro h2 {	
+	font-size: 22px;
+	line-height: 30px;
+	font-style: italic;
+	margin-bottom: 50px;
+}
+
+#intro p {
+	margin-top: 30px;
+}
+
+#intro textarea {
+	font-size: 14px;
+	xoutline-color: none !important;
+}
+
+p#wanderp {
+	margin: 30px 0;
+	padding-top: 0;
+}
+
+p#wanderp label {font-size: 14px;	}
+
+#wander {
+	margin-left: 20px;
+	font-size: 16px;
+	xfont-weight: bold;
+}
+
+#wander.disabled {
+}
+
+@keyframes rotate {
+	from {transform: rotate(0deg);}
+	to {transform: rotate(360deg);}
+}
+
+#loading {
+	width: 20px;
+	height: 20px;
+	background: transparent url("img/loading.svg") no-repeat center;
+	background-size: 15px 15px;	
+	display: inline-block;
+	opacity: 0;
+  animation-duration: 1s;
+  animation-name: rotate;
+	animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+#loading.active {
+	opacity: 1;
+}
+
+#intro #tooshort {
+	visibility: hidden;
+	margin: 5px 0;
+	padding: 0;
+	font-size: 14px;	
+	margin-left: 325px;
+}
+
+#intro p.teaser {
+	clear: both;
+	margin: auto;
+	padding-top: 0px;
+	width: 475px;
+	padding-right: 175px;
+	text-align: left;;
+	height: 190px;
+}
+
+#intro #tooshort.active {
+	visibility: visible;
+}
+
+#intro #tooshort.active span {
+	padding: 3px 6px;
+	border-radius: 6px;
+}
+
+#intro p.tolowercase {
+	margin-top: 10px;
+	font-size: 14px;
+}
+
+#intro p.tolowercase label {
+	padding-left: 3px;
+}
+
+#textwrap {
+	width: 1000px;
+	xborder: 1px solid #999;	
+}
+
+#selecttext {
+	width: 300px;
+	float: left;	
+	margin: auto;
+	margin-left: 175px;
+	xborder: 1px solid #999;
+	xfont-size: 16px;
+	xfloat: left;
+	text-align: left;
+	line-height: 20px;
+}
+
+#intro p#selecttext {
+	margin-top: 0;
+}
+
+#intro textarea {
+	resize: none;
+	width: 300px;
+	height: 140px;
+	border: 1px solid #000;
+	margin: 0;
+	padding: 2;
+	margin-top: 0px;
+	margin-right: 150px
+}
+
+
+#intro #sharebuttons {
+	margin-top: 60px;
+}
+
+#sharebuttons2 {
+	margin-top: 20px;
+}
+
+#sharebuttons .fb-like, #sharebutton twitter-share-button {
+	width: 95px;
+	text-align: center;
+}
+
+#sharebuttons .fb-like {
+	display: inline !important;
+	float: left;
+}
+
+#sharebuttons iframe.twitter-share-button {
+	padding-left: 410px;
+	float: left;
+}
+
+#intro #contact {
+	margin-top: 0px;
+	font-size: 12px;
+}
+
+/* MAIN */
+
+#header {
+	margin: auto;
+	padding: 0;
+	top: 5px;
+	position: absolute;
+	width: 1000px;
+	height: 50px;
+	font-size: 36px;
+	z-index: 20;	
+}
+
+#header h1 {	
+	font-size: 24px;
+	line-height: 45px;
+	margin-top: 2px;
+	margin-left: 5px;
+	float: left;
+	user-select: none;		
+	
+}
+
+#header h1:hover {
+	cursor: pointer;
+}
+
+#header h2 {	
+	user-select: none;		
+	float: right;
+	font-size: 16px;
+	line-height: 45px;
+	margin-top: 2px;
+	margin-right: 0px;
+	text-align: right;
+	font-weight: normal;
+}
+
+#header h2 span {
+	background-color: #fff;
+	xborder: 1px solid #ddd;
+	color: #000;
+	margin: 0px;
+	font-size: 16px;
+	border-radius: 5px;
+	padding: 2px 4px;
+}
+
+#header h2 span:hover {
+	background-color: #ddd;
+	xcolor: #fff;
+	cursor: pointer;
+}
+
+#header h2 span.active {
+	background-color: #000;
+	color: #fff;
+	cursor: pointer;
+}
+
+#search {
+	margin: 0px;
+	font-size: 16px;
+	display: block;
+	position: absolute;	
+	margin: auto;
+	margin-top: 15px;
+	clear: both;
+	xpadding: 0 2px;	
+	width: 200px;
+	left: 400px;
+	z-index: 21;
+}
+
+#suggestions {
+	overflow: hidden;
+	white-space: nowrap;
+	border: 1px solid #000;
+	width: 200px;
+	left: 400px;
+	color: #000;
+	background-color: #fff;
+	margin: 0px;
+	font-size: 16px;
+	line-height: 20px;
+	display: block;
+	position: absolute;	
+	margin: auto;
+	margin-top: 40px;
+	padding: 0px;
+	z-index: 20;
+	opacity: 0;
+	box-shadow: 3px 3px 6px rgba(0,0,0,.25);	
+	
+}
+
+#suggestions div {
+	padding: 2px 8px;
+}
+
+#suggestions:hover div:hover {
+	cursor: pointer;
+	xtext-decoration: underline;
+	background-color: #ddd !important;	
+}
+
+#suggestions:hover div {
+	background-color: #fff !important;
+}
+
+#suggestions div.active {
+	background-color: #ddd;
+}
+
+#options, #help {
+	display: none;
+	margin: auto;
+	border: 1px solid #000;
+	position: absolute;
+	padding: 10px;
+	margin-top: 45px;
+	width: 400px;
+	margin-left: 580px;
+	background-color: #fff;
+	box-shadow: 3px 3px 6px rgba(0,0,0,.25);	
+	z-index: 25;
+}
+
+
+#help p {
+	margin-top: 0px;
+	margin-bottom: 12px;
+}
+
+#help {
+	width: 525px;
+	margin-left: 445px;	
+	padding: 15px;
+	padding-bottom: 0;	
+}
+
+#help img {
+	clear: left;
+	float: left;	
+	padding: 5px 15px 10px 0;
+}
+
+#options ul {
+	padding: 0;
+	margin: 0;
+	margin-bottom: 20px;
+	margin-left: 15px;
+	float: left;
+}
+
+#exclude {
+	width: 250px;
+}
+
+#options p.exclude {
+	margin-bottom: 5px;
+}
+
+#options p {
+	margin: 0;
+	margin-bottom: 20px;
+	padding-left: 4px;
+	clear: both;
+}
+
+#options p.types { margin-bottom: 5px;}
+#options p.buttons { margin-bottom: 5px;}
+
+#options ul li {
+	list-style-type: none;
+	padding-bottom: 3px;
+}
+
+#options ul li label { padding-left: 4px; }
+
+#selectall:hover {
+	cursor: pointer;
+	text-decoration: underline;
+}
+
+#options.active, #help.active {
+	display: block;	
+}
+
+#apply {
+	xfont-weight: bold;
+	font-size: 16px;
+	
+}
+
+label {
+	user-select: none;
+	cursor: pointer;		
+}
+
+input[type="checkbox"], input[type="submit"] {
+	cursor: pointer;	
+}
+
+#options p input {
+	xborder: 1px solid #000;
+	xcolor: #000;
+	margin: 0;
+	margin-right: 10px;
+	xbackground-color: #fff;
+}
+
+
+#vis, #vis2	{	
+	margin: auto;
+	top: 60px;
+	position: absolute;;
+	width: 1000px;
+	height: 500px;
+	border: 1px solid transparent;
+	font-size: 36px;
+	z-index: 1;
+}
+
+#can {
+	position: absolute;
+	top: 60px;
+	margin: auto;
+	border: 0px solid transparent;
+	background-color: #fff;
+	border-radius: 10px;
+	z-index: 0;
+}
+
+#vis2 {	
+	border: 1px solid #999;
+	text-align: center;
+	margin: 0;
+	position: absolute;
+	top: -1000px; 
+	overflow: hidden;
+	left: 0;
+	background-color: transparent;
+	opacity: 0;
+	user-select: none;		
+}	
+
+#vis {
+/*	background-color: #fff;*/
+}
+
+#vis span, #vis2 span {
+	user-select: none !important;
+	padding: 0px;
+	white-space: nowrap;
+	border-radius: .35em;
+	border: .1em solid transparent;
+}
+
+#vis span {
+	cursor: pointer !important;	
+	z-index: 1;
+	color: rgba(0,0,0,.5);
+	position: absolute;
+	display: block;
+	left: 0px;
+	top: 0px;
+	transition: transform 1s ease-in-out, opacity ease-in-out 1s, color linear .2s, background linear .2s;
+	transform-origin: 0% 50%;
+	tap-highlight-color: transparent;
+	
+	background: white none no-repeat right center;
+	background-size: 1em 1em;	
+}
+
+#vis span.justadded {
+	opacity: 0;
+	transition: left 0, top 0, font-size 0, opacity 1s;
+	transition-delay: 1s;
+}
+
+#vis span.toberemoved {
+	opacity: 0;
+	transition: opacity .5s;
+	transition-delay: 0s;		
+}
+
+#vis span.notlinked {
+	color: rgba(0,0,0,.15);
+	xtransition-duration: .25s;
+	transition-delay: 0s;
+}
+
+#vis span.linked {
+	color: rgba(0,0,0,1);		
+	xtransition-duration: .25s;
+	transition-delay: 0s;
+}
+
+#vis span:hover, #vis span.hover {
+	display: block;
+	color: black;
+	visibility: visible;
+	background-color: white !important;
+	border: .1em solid black;
+	z-index: 10;
+	xpadding-left: 20px;
+	xpadding-right: .75em;
+	xbackground: white url("img/arrow2.svg") no-repeat right center;
+	xbackground-size: .75em .75em;
+}
+
+#vis span.compare:hover, #vis span.compare.hover {
+	xbackground: white url("img/arrow2.svg") no-repeat right center;
+	xbackground-size: .75em .75em;	
+}
+
+#vis span.active, #vis span.active:hover {
+	z-index: 10;
+	background-color: black !important;
+	color: white !important;
+	xtransform-origin: 50% 50%;
+}	
+
+#instances {
+	display: none;
+	position: absolute;
+	padding-bottom: 25px;
+	top: 575px;
+	width: 1000px;
+	overflow: hidden;
+	margin: auto;
+	text-align: center;
+	font-size: 14px;
+	transition: opacity .5s ease-in-out;
+	user-select: none;
+}
+
+#instances.active {
+	display: block;
+}
+
+#instances span {
+	padding: 2px;
+	color: #999;
+	cursor: default;
+	border: 1px solid transparent;
+	border-radius: .35em;	
+}
+
+#instances span.hover {
+	xtext-decoration: underline;
+	background-color: #fff;
+	color: #000;
+	cursor: pointer;
+	border: 1px solid #000;	
+}
+
+#instances div  {
+	white-space: nowrap;
+	line-height: 25px;
+}
+
+#instances div.left {
+	clear: both;
+	float: left;
+	text-align: right;
+}
+
+#instances div.middle {
+	float: left;
+	text-align: center;	
+	xfont-weight: bold;
+}
+
+#instances div.middle span {
+	color: #000;
+	
+}
+
+#instances div.right {
+	float: right;
+	text-align: left;	
+}
+
+#instances div.left {   xbackground-color: #FFD2B1;}
+#instances div.middle { xbackground-color: #DDE8C7;}
+#instances div.right {  xbackground-color: #BFD7EA;}
+
+#instances span.ellipsis {
+	color: #777;
+}
+
+#instances span.active {
+	color: #fff;
+	background-color: #000;
+}
+
+#instances div#showall {
+	padding-top: 15px;
+	width: 1000px;
+	height: 50px;
+	clear: both;
+	text-align: center;
+}
+
+#instances div#showall span {
+	border-radius: 5px;	
+	color: #000;
+	background-color: #fff;	
+}
+
+#instances div#showall span:hover {
+	background-color: #ddd;
+	cursor: pointer;
+}
+
+	
+/* HELP */
+	
+</style>
+
+</head>
+<body>
+
+<div id="intro">
+
+	<p><img src="img/visgif2.gif" width=250 height=123 alt="VisGIF"></p>
+
+	<h1>WordWanderer</h1>
+
+	<h2>take your text for a walk</h2>
+	
+	<p class="teaser">
+		We are experimenting with visual ways in which we can enhance people's engagement with language. By fusing the information we can obtain from corpus searches, concordance outputs and word clouds we are aiming to enable and encourage people to notice and wander through the words they read, write and speak.<br><br>
+
+	To try an early prototype of the WordWanderer <br>
+	just select a text below or paste your own and take it for a walk.</p>	
+	
+	<div id="textwrap">
+		<p id="selecttext">
+			<input type="radio" name="textchoice" id="hanselgretel" /> <label for="hanselgretel">Hansel and Gretel (Brothers Grimm)</label><br>			
+			<!-- <input type="radio" name="textchoice" id="beowulf" /> <label for="beowulf">Beowulf</label><br> -->
+			<input type="radio" name="textchoice" id="gillman" /> <label for="gillman">The Yellow Wallpaper (Gillman)</label><br>
+			<input type="radio" name="textchoice" id="kafka" /> <label for="kafka">In the Penal Colony (Kafka)</label><br>
+			<!-- <input type="radio" name="textchoice" id="hesse" /> <label for="hesse">Siddhartha by Hesse</label><br> -->
+			<!-- <input type="radio" name="textchoice" id="wilde" /> <label for="wilde">Dorian Gray by Wilde</label><br> -->
+			<!-- <input type="radio" name="textchoice" id="conrad" /> <label for="conrad">Heart of Darkness by Conrad</label><br> -->
+			<input type="radio" name="textchoice" id="vonnegut" /> <label for="vonnegut">2 B R 0 2 B (Vonnegut)</label><br>
+			<input type="radio" name="textchoice" id="borges" /> <label for="borges">The Library of Babel (Borges)</label><br>
+			<input type="radio" name="textchoice" id="stevenson" /> <label for="stevenson">Jekyll &amp; Hyde (Stevenson)</label><br>
+			<input type="radio" checked name="textchoice" id="own" /> <label for="own">Your own text: paste in box →</label>
+		</p>
+		
+		<textarea id="text" placeholder="Paste your text here."></textarea>
+		
+	</div>
+	
+
+	<p id="tooshort"><span></span></p>
+		
+		
+	<p id="wanderp">
+		<input checked type="checkbox" id="lowercase" /> <label for="lowercase">turn text to lower case</label><br>
+		<input type="submit" class="disabled" name="wander" value="wander" id="wander">	
+	<span id="loading">&nbsp;</span></p>
+
+	<p id="contact">
+		An experiment by <a href="http://mariandoerk.de/">Marian Dörk</a> and <a href="http://www.cf.ac.uk/encap/contactsandpeople/profiles/knight_dawn.html">Dawn Knight</a> at Newcastle University<br>
+		funded by the RCUK Digital Economy programme’s <a href="http://www.patina.ac.uk/">PATINA project</a>.<br>
+		More details about the concept and methods are in this <a href="http://mariandoerk.de/wordwanderer/corpora2015.pdf">article</a>.</p>
+
+</div>
+
+
+<div id="header">
+	<h1>WordWanderer</h1>
+	<h2>
+		<span id="options_button">Options</span> &nbsp; 
+		<span id="help_button">Help</span> &nbsp; 
+	</h2>
+	<input type="search" id="search" name="search" placeholder="search for words">
+	
+	<div id="suggestions">	</div>
+	
+</div>
+
+<div id="vis"></div>
+<div id="vis2"></div>
+<canvas id="can" width="1000" height="500"></canvas>
+
+
+<div class="" id="help">
+	
+<p>The WordWanderer interface has three main views:</p>
+
+<img src="img/view0.svg" width=150 alt="cloud view">
+
+<p>The cloud view displays the most common words of a text using font size
+	to represent relative frequencies.
+The ordering of the words is alphabetical from top to bottom, left to right. When hovering over a word, its relationship with other words, in terms of their rate of proximal co-occurrence in a text, are highlighted in colour.</p>
+
+<img src="img/view1.svg" width=150  alt="context view">
+
+<p>Clicking on a word selects it for the context view.
+The word sizing corresponds to how often they occurr in the text near
+the selected word: the larger the word, the stronger the association between the words and the selected term.
+Vertical positioning is alphabetical and horizontal positioning represents sentence positions relative to the selected word.</p>
+	
+<img src="img/view2.svg" width=150  alt="comparison view">
+
+<p>Dragging a line between two words triggers the comparison view.
+In this view a word's size corresponds to the combined association strength with the two words.
+Here, the horizontal position represents the difference in association between the two selected words.
+If a word occurs more often with the left word, it will be placed more towards the left side of the screen.</p>
+	
+<p>All views show a limited a number of words. To find a specific word there is a search
+function above the visualization. Simply type in a word and hit enter to activate this function. In the options (top right), you can set which types of words are included, based on their parts of speech.
+When in context view, the instances of the selected word are displayed below the visualization.</p>
+
+<div id="sharebuttons2">
+</div>
+
+</div>
+
+
+<div class="" id="options">
+	
+	<p class='types'><strong>Show</strong> (<span id="selectall">select all</span>)</p>
+	
+	<ul>
+		<li> <input checked type="checkbox" id="type_JJ" /><label for="type_JJ">Adjectives</label></li>
+		<li> <input checked type="checkbox" id="type_RR" /><label for="type_RR">Adverbs</label></li>
+		<li> <input checked type="checkbox" id="type_NN" /><label for="type_NN">Nouns</label></li>
+		<li> <input checked type="checkbox" id="type_VV" /><label for="type_VV">Verbs</label></li>		
+	</ul>
+	<ul>
+		<li> <input checked type="checkbox" id="type_CC" /><label for="type_CC">Conjunctions</label></li>
+		<li> <input checked type="checkbox" id="type_DD" /><label for="type_DD">Determiners</label></li>
+		<li> <input checked type="checkbox" id="type_II" /><label for="type_II">Prepositions</label></li>
+		<li> <input checked type="checkbox" id="type_PP" /><label for="type_PP">Pronouns</label></li>
+	</ul>
+	<ul>
+		<li> <input type="checkbox" id="type_PU" /><label for="type_PU">Punctuation</label></li>
+		<li> <input type="checkbox" id="type_MC" /><label for="type_MC">Numbers</label></li>
+		<li> <input type="checkbox" id="type_SY" /><label for="type_SY">Symbols</label></li>		
+		<li> <input type="checkbox" id="type_FU" /><label for="type_FU">Other</label></li>		
+	</ul>	
+	
+	
+	<p class='exclude'><strong>Hide</strong> </p>
+
+	<ul>
+		<li> <input checked type="checkbox" id="stopwords" /><label for="stopwords">Common words such as: the, is, at, in, and of</label> </li>
+		<li> <input type="checkbox" id="excludeopt" /> <input id="exclude" placeholder="enter words separated by space" name="exclude">
+	</ul>	
+
+	<p class='buttons'>
+		<input type="submit" name="apply" value="Apply" id="apply">
+	</p>
+</div>
+
+<div id="instances">
+</div>
+
+
+
+
+<div id="post">
+
+</div>
+
+<script>
+
+var beyondhome = false;
+
+var sourcetext = "";
+
+// config
+var windowside = 10;
+var limit = 300; // for cloud
+var limit_context = 100; // for context 
+var limit_compare = 100; // per word 
+var snippetlimit = 10;
+var lowercase = true;
+
+var baseurl = document.URL.split("#")[0];
+
+var Words = {};
+var words = [];
+var indices = {};
+var selection = [];
+var suggestions = [];
+var suggestionindex = 0;
+
+var hoverTimeout = null;
+
+var worddist = 5;
+
+var wordmap = {};
+
+var maxcount = 0;
+
+var active = [];
+
+var min_text_length = 50;
+$("#tooshort").html("<span>Please paste at least "+min_text_length+" words.</span>");
+
+var canel = document.getElementById("can");
+var can = canel.getContext("2d");
+
+
+// make sure text is long enough
+function check_text() {
+	
+	var text = $("#text").val();
+	var textA = text.split(" ");;
+	
+	var textchoice = $('#selecttext input[type=radio]:checked').prop("id");
+		
+	if (textA.length < min_text_length && textchoice=="own") {
+		$("#tooshort").addClass("active");
+		$("#wander").addClass("disabled");
+	}
+	else {
+		$("#tooshort").removeClass("active");		
+		$("#wander").removeClass('disabled');
+	}
+}
+
+
+$("#text").unbind().change(check_text);
+
+$("#wander").unbind().mouseover(check_text)
+
+$("#wander").click(function(){
+
+	var text = $("#text").val();
+	var textA = text.split(" ");;
+
+	var textchoice = $('#selecttext input[type=radio]:checked').prop("id");
+
+	if (textA.length > min_text_length || textchoice!="own") {		
+		$("#loading").addClass("active");
+		
+		if (textchoice=='own') setTimeout(function(){
+			sourcetext = text;
+			analyse();
+		}, 10);
+		else jQuery.get(baseurl+"texts/"+textchoice+".txt", function(data){
+			sourcetext = data;
+			analyse();			
+		});
+	}
+})
+
+function events() {
+
+	// general events
+
+	$(document).unbind().keyup(function(e) {
+
+		// return
+	  if (e.keyCode == 13) {	
+			if ($("#options").hasClass("active")) {
+				apply();
+			}
+			$("#exclude").blur();
+		}
+		// escape
+	  else if (e.keyCode == 27) {
+
+			if ($("#options").hasClass("active")) options();	
+			if ($("#help").hasClass("active")) help();	
+			
+			if ($("#search").is(":focus")) {
+				suggest();
+				$("#search").blur();
+			}
+			else if (active.length>0) {
+				$(".active").addClass("hover");
+				active = [];			
+				layout();
+			}	
+		}	
+	});
+
+	$("#selectall").unbind().click(function(){
+
+		var types = ["JJ", "RR", "CC", "DD", "NN", "MC", "II", "PP", "PU", "SY", "FU", "VV"];
+		for (var i=0; i < types.length; i+=1) {
+			$("#type_"+types[i]).prop("checked", true);
+		}	
+
+	})
+
+	$("#search").unbind().keyup(function(e){
+
+		$("#suggestions div.active").removeClass("active");
+
+		// return
+		if (e.keyCode==13) {		
+			var index = parseInt($($("#suggestions div")[suggestionindex]).prop("id").split("s_")[1]);
+			$("#search").blur();
+			active = [index];
+			layout();		
+		}
+		else if (e.keyCode==38 || e.keyCode==40) {
+
+			var suglength = $("#suggestions div").length;
+
+			if (e.keyCode==38) suggestionindex--;
+			else if (e.keyCode==40) suggestionindex++;
+
+			if (suggestionindex < 0) suggestionindex = suglength-1;
+			else if (suggestionindex > suglength-1) suggestionindex = 0;
+
+			$($("#suggestions div")[suggestionindex]).addClass("active");		
+
+			// highlight selection
+			var index = parseInt($($("#suggestions div")[suggestionindex]).prop("id").split("s_")[1]);
+			hover();
+			hover(index);
+		}
+		else suggest($("#search").val());
+	});
+
+	$("#exclude").unbind().keyup(function(){
+
+		var txt = $(this).val();
+
+		if (txt.length>0) $("#excludeopt").prop("checked", true);	
+
+	});
+
+	$("#apply").unbind().click(apply);
+
+	$("#header h1").unbind().click(home);
+
+	$("#options_button").unbind().click(function(e){options();});
+
+	$("#help_button").unbind().click(function(e){help();});
+	
+}
+
+function options(show) {
+	
+	if (typeof show === "undefined") {		
+		if ($("#options").hasClass('active')) show = false;
+		else show = true;
+	}
+	
+	// show
+	if (show) {		
+		help(false);
+		suggest();
+		$("#exclude").focus();		
+		$("#options_button").addClass('active');				
+		$("#options").addClass('active');
+	}
+	// hide
+	else {
+		$("#options_button").removeClass('active');
+		$("#options").removeClass('active');
+	}
+	
+}
+
+function help(show) {
+	
+	if (typeof show === "undefined") {		
+		if ($("#help").hasClass('active')) show = false;
+		else show = true;
+	}
+	
+	
+	
+	// show
+	if (show) {		
+		options(false);
+
+		$("#help_button").addClass('active');				
+		$("#help").addClass('active');
+	}
+	// hide
+	else {
+		$("#help_button").removeClass('active');
+		$("#help").removeClass('active');
+	}
+	
+}
+
+
+
+function apply() {
+	
+	options(false);
+	
+	exclude();	
+}
+
+// back to home screen
+function home() {
+	beyondhome = false;
+	
+	window.scrollTo(0,0);
+	$("#instances").removeClass("active");
+	
+	help(false);
+	options(false);
+
+	Words = {};
+	words = [];
+	selection = [];
+	active = [];
+
+	$("#instances").html("");
+	
+	$("#loading").removeClass("active");
+	
+	$("#intro").css({display: 'block'});
+	
+	setTimeout(function(){
+		$("#intro").css({opacity: 1});
+	}, 10);
+	
+	setTimeout(function(){
+		$("#vis2,#vis").html("");
+	}, 1000);
+	
+	
+}
+
+// get words that match the query
+function suggest(query) {
+	
+	suggestions = [];
+	suggestionindex = 0;
+	
+	if (typeof query === "undefined" || query.length==0) {
+		$("#search").val("");
+		$("#suggestions").html("").css({opacity: 0, height: 0});
+		return;
+	}
+	
+	options(false);
+	help(false);
+	
+	for (var i=0; i < words.length; i+=1) {
+		var Word = words[i];
+		if (lowercase) var w = Word.word;
+		else var w = Word.word.toLowerCase();
+		
+		if (w.indexOf(query.toLowerCase())==0 && Word.exclude==false) suggestions.push(words[i]);
+	}
+	
+	sortByAlphabet(suggestions);
+	
+	var list = "";
+	
+	for (var i=0; i < suggestions.length; i+=1) {
+		var Word = suggestions[i];
+		var index = Word.index;
+		var word = Word.word;
+		
+		if (i>20) break;
+		
+		if (i==suggestionindex) {
+			var sugsel = " class='active' ";
+			hover(index);			
+		}
+		else var sugsel = "";
+		
+		list+= "<div "+sugsel+" id='s_"+index+"'>"+word+"</div>";		
+	}
+
+	list += "";
+
+	// height
+	var h = Math.min(suggestions.length, 20) * 24;	
+
+	if (suggestions.length==0) $("#suggestions").html("").css({opacity: 0, height: 0});
+	else $("#suggestions").html(list).css({opacity: 1, height: h});	
+	
+	
+	// events
+	$("#suggestions div").click(function(){
+		var index = parseInt($(this).prop("id").split("s_")[1]);
+		active = [index];
+		layout();
+	})
+	
+	$("#suggestions div").hover(function(){
+		var index = parseInt($(this).attr("id").split("s_")[1]);
+		hover(index);
+	}, function(){
+		hover();		
+	});	
+}
+
+// analyse text, build structure, get widths
+function analyse(text) {
+	
+	lowercase = $("#lowercase").prop('checked');
+	$("#intro").css({opacity: 0});
+	setTimeout(function(){
+		$("#intro").css({display: 'none'});
+	}, 1000);
+	
+	// lowercase = $("#tolowercase").prop("checked");	
+	Words = {};
+	delete Words['watch'];
+	words = [];
+	maxcount = 0;
+	
+	var type_map = {
+		'CC'	: 'CC',
+		'CD'	: 'MC',
+		'DT'	: 'MC',
+		'EX'	: 'RR',
+		'FW'	: 'FU',
+		'IN'	: 'II',
+		'JJ'	: 'JJ',
+		'JJR'	: 'JJ',
+		'JJS'	: 'JJ',
+		'LS'	: 'MC',
+		'MD'	: 'VV',
+		'NN'	: 'NN',
+		'NNP'	: 'NN',
+		'NNPS': 'NN',
+		'NNS'	: 'NN',
+		'POS'	: 'PU',
+		'PDT'	: 'DD',
+		'PP$'	: 'PP',
+		'PRP'	: 'PP',
+		'RB'	: 'RR',
+		'RBR'	: 'RR',
+		'RBS'	: 'RR',
+		'RP'	: 'RR',
+		'SYM'	: 'SY',
+		'TO'	: 'II',
+		'UH'	: 'FU',
+		'VB'	: 'VV',
+		'VBD'	: 'VV',
+		'VBG'	: 'VV',
+		'VBN'	: 'VV',
+		'VBP'	: 'VV',
+		'VBZ'	: 'VV',
+		'WDT'	: 'DD',
+		'WP'	: 'PP',
+		'WP$'	: 'DD',
+		'WRB'	: 'RR',
+		','		: 'PU',
+		'.'		: 'PU',
+		':'		: 'PU',
+		'!'		: 'PU',
+		'$'		: 'SY',
+		'#'		: 'SY',
+		'"'		: 'PU',
+		'('		: 'PU',
+		')' 	: 'PU'
+	}
+	
+	// POS tagging
+	var text = "";
+	// text=sourcetext.replace(/"/g, " \" ");
+	text=sourcetext.replace(/;/g, " ; ");
+	text=text.replace(/:/g, " : ");
+	text=text.replace(/'s/g, " 's ");
+	text=text.replace(/`s/g, " 's ");
+	text=text.replace(/’s/g, " 's ");
+	text=text.replace(/\[/g, " [ ");
+	text=text.replace(/\]/g, " ] ");
+	text=text.replace(/\(/g, " ( ");
+	text=text.replace(/\)/g, " ) ");
+		
+	var taggedWords = new POSTagger().tag(new Lexer().lex(text));
+	
+	indices = {};
+	
+	// words
+	var index = 0;
+	for (var i=0; i < taggedWords.length; i+=1) {
+		if (lowercase) taggedWords[i][0] = taggedWords[i][0].toLowerCase();
+	  var word = taggedWords[i][0];
+	
+		if (word=="'s") taggedWords[i][1] = "POS";	  
+		var type = type_map[taggedWords[i][1]];
+		
+		if (!indices.hasOwnProperty(word)) {
+			indices[word] = index;
+			wordmap[index] = word;
+			index++;
+		}
+		
+		if (!Words.hasOwnProperty(word)) {
+			var Word = {
+				word: word,
+				count: 0,
+				shown: false,
+				exclude: false,
+				index: indices[word],
+				links: {},
+				types: {},
+				instances : []
+			};
+			
+			Words[word] = Word;
+			words.push(Word);
+		}
+		else var Word = Words[word];
+		
+		if (!Word.types.hasOwnProperty(type)) Word.types[type] = 0;
+		Word.types[type]++;			
+		Word.count++;			
+	}
+	
+	for (var i=0; i < words.length; i+=1) {
+		var types = 0;
+		for (type in words[i].types) types++;
+	}
+	
+	// links and instances
+	for (var i=0; i < taggedWords.length; i+=1) {
+		var word = taggedWords[i][0];
+		var Word = Words[word];
+		maxcount = Math.max(maxcount, Word.count);		
+		
+		var instance = [];
+				
+		for (var j=i-windowside; j < i+windowside+1; j+=1) {
+			
+			if (i==j) instance.push(null);
+			else if (j>-1 && i!=j && j<taggedWords.length) {
+				
+				var word2 = taggedWords[j][0];
+				var Word2 = Words[word2];
+				
+				instance.push(word2);				
+				
+				if (!Word.links.hasOwnProperty(word2)) {
+					Word.links[word2] = {
+						positions: [],
+						strength: 0
+					}
+				}
+				
+				var position = j-i;
+				var strength = windowside - Math.abs(position) + 1;
+				Word.links[word2].positions.push(position);
+				Word.links[word2].strength += strength;
+			}
+		}
+		
+		Word.instances.push(instance);
+		
+		for (colocate in Word.links) {			
+			// Word.maxstrength = Math.max(Word.links[colocate].strength, Word.maxstrength);			
+			var sum = Word.links[colocate].positions.reduce(function(a, b) { return a + b; });			
+			var avg = sum / Word.links[colocate].positions.length;
+			Word.links[colocate].avgpos = Math.round(1000*avg)/1000;
+		}
+		
+	}
+	
+	// get widths
+	for (var i=0; i < words.length; i+=1) {
+		var Word = words[i];
+		var word = Word.word;
+		var index = Word.index;		
+		
+		$("#vis2").append(" <span id='w2_"+index+"'>&nbsp;"+word+"&nbsp;</span> ");
+		
+		Word.width = $("#w2_"+index).width();		
+	}
+	
+	// sort by count
+	words = words.sort(function(a,b){ if (a.count>b.count) return -1; else return 1; });
+	
+	exclude();
+}
+
+// exclude words based on stopwords, hiding, and types
+function exclude() {
+	
+	for (var i=0; i < words.length; i+=1) {
+		words[i].shown = false;
+		words[i].exclude = false;		
+	}
+	
+	// mysql stopwords 
+	if ($("#stopwords").prop("checked")) var hide_stopwords = true;
+	else var hide_stopwords = false;
+	
+	var stopwords = {"a": 1, "able": 1, "about": 1, "across": 1, "after": 1, "all": 1, "almost": 1, "also": 1, "am": 1, "among": 1, "an": 1, "and": 1, "any": 1, "are": 1, "as": 1, "at": 1, "be": 1, "because": 1, "been": 1, "but": 1, "by": 1, "can": 1, "cannot": 1, "could": 1, "dear": 1, "did": 1, "do": 1, "does": 1, "either": 1, "else": 1, "ever": 1, "every": 1, "for": 1, "from": 1, "get": 1, "got": 1, "had": 1, "has": 1, "have": 1, "he": 1, "her": 1, "hers": 1, "him": 1, "his": 1, "how": 1, "however": 1, "i": 1, "if": 1, "in": 1, "into": 1, "is": 1, "it": 1, "its": 1, "just": 1, "least": 1, "let": 1, "like": 1, "likely": 1, "may": 1, "might": 1, "most": 1, "must": 1, "my": 1, "neither": 1, "no": 1, "nor": 1, "not": 1, "of": 1, "off": 1, "often": 1, "on": 1, "only": 1, "or": 1, "other": 1, "our": 1, "own": 1, "rather": 1, "said": 1, "say": 1, "says": 1, "she": 1, "should": 1, "since": 1, "so": 1, "some": 1, "than": 1, "that": 1, "the": 1, "their": 1, "them": 1, "then": 1, "there": 1, "these": 1, "they": 1, "this": 1, "tis": 1, "to": 1, "too": 1, "twas": 1, "us": 1, "wants": 1, "was": 1, "we": 1, "were": 1, "what": 1, "when": 1, "where": 1, "which": 1, "while": 1, "who": 1, "whom": 1, "why": 1, "will": 1, "with": 1, "would": 1, "yet": 1, "you": 1, "your": 1, "me": 1};
+	
+	// hide these words	
+	if ($("#excludeopt").prop("checked")) var exclude = $("#exclude").val().split(" ");
+	else var exclude = [];
+
+	// active types
+	var types = ["JJ", "RR", "CC", "DD", "NN", "MC", "II", "PP", "PU", "SY", "FU", "VV"];
+	var active_types = {};
+	for (var i=0; i < types.length; i+=1) {
+		var type = types[i];
+		if ($("#type_"+type).prop("checked")) active_types[type] = true;
+		else active_types[type] = false;
+	}
+	
+	for (var i=0; i < words.length; i+=1) {
+		var Word = words[i];		
+		// stopwords		
+		if (hide_stopwords && stopwords.hasOwnProperty(Word.word.toLowerCase())) Word.exclude = true;
+		// exclude
+		else if (exclude.indexOf(Word.word)>-1) Word.exclude = true;
+		// types
+		else {
+			var type_not_included = true;
+			for (type in Word.types) {
+				if (active_types[type]) type_not_included = false;
+			}
+			
+			if (type_not_included) Word.exclude = true;
+		}	
+	}	
+	
+	layout();
+}
+
+// select, position, and size and words
+function layout() {
+	
+	beyondhome = true;
+	events();
+	
+	suggest();
+	options(false);
+	help(false);
+
+	$("#instances").addClass("active");
+	
+	if (active.length==0) cloud();
+	else if (active.length==1) context();
+	else if (active.length==2) comparison();
+}
+
+// word cloud
+function cloud() {
+	
+	$("span.active").removeClass("active");
+	
+	selection = [];
+	var maxcount = 0;
+	var mincount = 100000;
+	
+	// select top 300 words
+	for (var i=0; i < words.length; i+=1) {
+		var Word = words[i];	
+		if (Word.exclude) Word.shown = false;
+		else if (selection.length==limit) Word.shown = false;		
+		else {			
+			Word.shown = true;
+			maxcount = Math.max(maxcount, Word.count);
+			mincount = Math.min(mincount, Word.count);
+			selection.push(Word);
+		}
+	}
+	
+	sortByAlphabet(selection);
+		
+	// scale words based on count, count lines
+	var widthsum = 0;
+	var lines = 0;
+	var extras = [];
+	for (var i=0; i < selection.length; i+=1) {
+		var Word = selection[i];
+		Word._s = interval(Word.count, mincount, maxcount, 1/3, 1, true);
+		Word._w = Word.width * Word._s;
+		
+		if (widthsum + Word._w + worddist > 975) {
+			extras[lines] = 1000 - widthsum;
+			widthsum = 0;
+			lines++;
+		}
+		widthsum += Word._w + worddist;
+	}
+	extras[lines] = 1000 - widthsum;
+	
+	// create a layout from a to z
+	var lineheight = 480/(lines+1);
+	var line = 0;
+	var x = 0;
+	var y = 0;
+
+	for (var i=0; i < selection.length; i+=1) {
+		var Word = selection[i];
+		
+		if (x + Word._w + worddist > 975) {
+			line++;
+			x = 0;
+			y += lineheight;
+		}
+		Word._x = x + extras[line]/2;
+		Word._y = y;
+		
+		x += Word._w + worddist;		
+	}
+	
+	display();
+}
+
+// word context
+function context() {
+	
+	var index_ = active[0];
+	var Word_ = Words[wordmap[index_]];
+
+	// create a new selection
+	var linked = [];
+	for (word in Word_.links) {
+		var Word2 = Words[word];
+		if (typeof Word2 === "undefined" || Word2.index==index_ || Word2.exclude) continue;
+		Word2.strength = Word_.links[word].strength;
+		linked.push(Word2);
+	}
+	
+	linked = linked.sort(function(a,b){ if (a.strength>b.strength) return -1; else return 1; });	
+	selection = [];
+	
+	if (linked.length<=limit_context) selection = linked;
+	else {
+		var cutoff = linked[limit_context].strength;
+		for (var i=0; i < linked.length; i+=1) {
+			var Word2 = linked[i];
+			if (Word2.strength<cutoff) break;
+			selection.push(Word2);
+		}
+	}
+	
+	selection.push(Word_);
+	
+	// update shown to reflect new selection
+	for (var i=0; i < words.length; i+=1) words[i].shown = false
+	for (var i=0; i < selection.length; i+=1) selection[i].shown = true;
+	
+	// gather context positions
+	var maxstr = 0;
+	var minpos = 100;
+	var maxpos = -100;	
+	for (var i=0; i < selection.length; i+=1) {		
+		var word = selection[i].word;
+		if (selection[i].index==index_) continue;
+		minpos = Math.min(minpos, Word_.links[word].avgpos);
+		maxpos = Math.max(maxpos, Word_.links[word].avgpos);
+		maxstr = Math.max(maxstr, Word_.links[word].strength);
+	}
+	
+	sortByAlphabet(selection);
+	
+	// set position and scale
+	for (var i=0; i < selection.length; i+=1) {		
+		var Word = selection[i];
+		var word = Word.word;
+		var index = Word.index;
+		
+		if (index==index_) {			
+			var x = 500 - Word.width/2;
+			var y = 250;
+			var s = 1;
+		}
+		else {
+			var s = interval(Word.strength, 1, maxstr, 1/3, 1, true);			
+			var x = interval(Word_.links[word].avgpos, minpos, maxpos, 100, 900, true) - Word.width*s/2;
+			var y = 25+i/selection.length * 425;
+		}
+		
+		Word._x = x;
+		Word._y = y;
+		Word._s = s;
+	}
+	
+	display();
+}	
+
+// word comparison
+function comparison() {
+	
+	var Word1 = Words[wordmap[active[0]]];
+	var Word2 = Words[wordmap[active[1]]];
+	
+	var linked1 = [];
+	var linked2 = [];
+	
+	var maxstrength1 = 0;
+	var maxstrength2 = 0;
+	
+	// reset shown and positions
+	for (var i=0; i < words.length; i+=1) {
+		words[i].shown = false
+		delete words[i].strength1;
+		delete words[i].strength2;
+	}	
+	
+	// select words to be shown
+	for (w in Word1.links) {
+		var Word = Words[w];
+		if (Word.exclude) continue;
+		Word.strength1 = Word1.links[w].strength;		
+		maxstrength1 = Math.max(Word.strength1, maxstrength1);
+		if (Word2.links.hasOwnProperty(w)) linked1.push(Word);
+	}
+	for (w in Word2.links) {
+		var Word = Words[w];
+		if (Word.exclude) continue;
+		Word.strength2 = Word2.links[w].strength;		
+		maxstrength2 = Math.max(Word.strength2, maxstrength2);
+		if (Word1.links.hasOwnProperty(w)) linked2.push(Word);
+	}
+	
+	linked1 = linked1.sort(function(a,b){ if (a.strength1>b.strength1) return -1; else return 1; });	
+	linked2 = linked2.sort(function(a,b){ if (a.strength2>b.strength2) return -1; else return 1; });	
+	
+	if (linked1.length<=limit_compare) var cutoff1 = linked1[linked1.length-1].strength1;
+	else var cutoff1 = linked1[limit_compare].strength1;
+
+	if (linked2.length<=limit_compare) var cutoff2 = linked2[linked2.length-1].strength2;
+	else var cutoff2 = linked2[limit_compare].strength2;
+
+	var linked = linked1.concat(linked2);	
+	selection = [];
+	for (var i=0; i < linked.length; i+=1) {
+		var Word = linked[i];
+		if (!Word.hasOwnProperty("strength1")) Word.strength1 = 0;
+		if (!Word.hasOwnProperty("strength2")) Word.strength2 = 0;				
+		if (Word.strength1>=cutoff1 || Word.strength2>=cutoff2) selection.push(Word);
+	}
+	
+	selection.push(Word1);
+	selection.push(Word2);
+	
+	// update shown to reflect new selection
+	for (var i=0; i < selection.length; i+=1) selection[i].shown = true;
+		
+	sortByAlphabet(selection);
+	
+	// set position and scale
+	for (var i=0; i < selection.length; i+=1) {		
+		var Word = selection[i];
+		var word = Word.word;
+		var index = Word.index;
+		
+		if (index==Word1.index) {			
+			var x = 30;
+			var y = 250+Word.width/2-30;
+			var s = 1;
+		}
+		else if (index==Word2.index) {			
+			var x = 970-2;
+			var y = 250-Word.width/2-30;
+			var s = 1;
+		}
+		else {
+			var s1 = interval(Word.strength1, 1, maxstrength1, 1/3, 1, true);			
+			var s2 = interval(Word.strength2, 1, maxstrength2, 1/3, 1, true);			
+			var s = (s1+s2)/2
+			
+			var allstrength = Word.strength1 + Word.strength2;
+			var x = 5 + Word1.width/2 + (990-Word1.width/2-Word2.width/2)*Word.strength2/allstrength - Word.width*s/2;
+			var y = 25+i/selection.length * 425;
+		}
+		
+		Word._x = x;
+		Word._y = y;
+		Word._s = s;
+	}
+	
+	display();	
+	
+}
+
+// add, remove, update elements
+function display() {
+
+	instances();
+
+	$(".linked").removeClass("linked");	
+	hoverTimeout = setTimeout(function(){ hover(); }, 2000);	
+
+	var spans = $("#vis span");
+	
+	var shown = {}; // by index
+	
+	for (var i=0; i < spans.length; i+=1) {
+		var el = $(spans[i]);
+		var index = parseInt(el.prop("id").split("w_")[1]);
+		var Word = Words[wordmap[index]];
+		
+		// update
+		if (Word.shown == true) {
+			shown[index] = Word;
+		}
+		// remove
+		else {
+			el.addClass("toberemoved");
+		}
+	}	
+	
+	// add
+	for (var i=0; i < words.length; i+=1) {
+		var Word = words[i];
+		var word = Word.word;
+		var index = Word.index;
+
+		if (!shown.hasOwnProperty(index) && Word.shown) {			
+			$("#vis").append(" <span class='justadded' id='w_"+index+"'>&nbsp;"+word+"&nbsp;</span> ");
+			shown[index] = Word;
+		}
+	}
+		
+	// set properties for shown items
+	for (index in shown) {
+		
+		var Word = shown[index];
+		var el = $("#w_"+index);
+		
+		var x = Word._x;
+		var y = Word._y;
+		var s = Word._s;
+		
+		if (active.indexOf(parseInt(index))>-1) {
+			el.addClass("active");
+		}
+		else el.removeClass("active");
+		
+		// highlight active
+		var rot = "";
+		if (active.length==2)	{
+			if (active[0] == index) rot = " rotate(-90deg) ";
+			else if (active[1] == index) rot = " rotate(90deg) ";
+		}
+		
+		// update css
+		var css = {transform: "translate("+x+"px,"+y+"px) scale("+s+")"+rot};  
+		el.css(css);
+	}
+	
+	// events	
+	$("#vis span").unbind();
+	
+	
+	// drag a line
+	$("#vis span").mousedown(function(e){
+		e.originalEvent.preventDefault();
+		
+		var pos = $('#can').position();		
+		var x = e.pageX-pos.left;
+		var y = e.pageY-pos.top;
+		var id = $(this).attr("id");
+		var index = parseInt(id.split("w_")[1]);
+		var Word = Words[wordmap[index]];
+		
+		hover();
+		$(this).addClass("hover");
+		$("#vis span").unbind();
+		
+		$("#vis span").hover(function(){
+			var id2 = $(this).attr("id");			
+			var index2 = parseInt(id2.split("w_")[1]);			
+			var Word2 = Words[wordmap[index2]];
+			
+			if (Word.links.hasOwnProperty(Word2.word)) {
+				$(this).addClass('hover');				
+			}
+		
+		}, function(){
+			if (id!=$(this).attr("id")) $(this).removeClass('hover');
+		});
+		
+		// update line
+		$(document).mousemove(function(e2){
+			var x2 = e2.pageX-pos.left;
+			var y2 = e2.pageY-pos.top;
+			
+			can.clearRect(0,0,1000,500);			
+			can.beginPath();
+			can.moveTo(x, y);
+		  can.lineTo(x2, y2);
+			can.strokeStyle = "#000";
+			can.lineWidth = 2;      
+			can.stroke();
+		});
+		
+		// release over another element
+		$("#vis span").mouseup(function(e){
+			
+			var index2 = parseInt($(this).attr("id").split("w_")[1]);
+			var Word2 = Words[wordmap[index2]];
+			
+			if (index==index2) {
+				if (active.length==1 && active[0] == index) active = [];
+				else active = [index];
+				layout();
+			}
+			else if (!Word.links.hasOwnProperty(Word2.word)) {
+				$(document).unbind();
+				$("#vis span").unbind();
+				layout();
+			}
+			else {
+				active = [index, index2];
+				$(document).unbind();
+				$("#vis span").unbind();
+				layout();
+			}
+			
+			can.clearRect(0,0,1000,500);			
+			
+		});
+		
+		$(document).mouseup(function(){
+			$(document).unbind();
+			can.clearRect(0,0,1000,500);			
+			display();
+			hover();
+		});
+		
+	})
+	
+	
+	
+	$("#vis span").hover(function(){
+		var index = parseInt($(this).attr("id").split("w_")[1]);
+		hover(index);
+	}, function(){
+		hover();		
+	});
+	
+	
+	// handle toberemoved and justadded
+	setTimeout(function(){ $(".toberemoved").remove(); }, 500);	
+	setTimeout(function(){ $(".justadded").removeClass("justadded"); }, 500);	
+	
+}
+
+function hover(index) {
+
+	clearTimeout(hoverTimeout);
+	if (active.length==1 && active[0] == index) return;
+
+	// reset old hovers
+	$(".hover").removeClass("hover");
+	$(".notlinked").removeClass("notlinked");
+	$(".linked").removeClass("linked");
+	
+	for (var i=0; i < words.length; i+=1) {			
+		var Word = words[i];
+		if (Word.shown) $("#w_"+Word.index).css({"background-color": 'transparent'});			
+	}
+
+	// undo hover
+	if (typeof index === "undefined") return;	
+
+	// apply hover
+	var Word = Words[ wordmap[index] ];
+	
+	if (typeof Word === "undefined") return;
+	
+	// if word is not shown	
+	if (Word.shown==false && Word.exclude==true) return;	
+	
+	
+	$(".w_"+Word.index).addClass('hover');	
+	$("#w_"+Word.index).addClass('hover');
+
+	var maxstrength = 0;
+	for (var i=0; i < selection.length; i+=1) {
+		var Word2 = selection[i];
+		if (Word.links.hasOwnProperty(Word2.word)) {		
+			maxstrength = Math.max(maxstrength, Word.links[Word2.word].strength);
+		}
+	}
+	
+	for (var i=0; i < selection.length; i+=1) {		
+		var Word2 = selection[i];
+		if (Word2.index==Word.index) continue;
+		
+		if (!Word.links.hasOwnProperty(Word2.word)) {			
+			$("#w_"+Word2.index).addClass("notlinked");			
+		}
+		else {			
+			var opac = interval(Word.links[Word2.word].strength, 1, maxstrength, .1, .75, true);			
+			var color = "rgba(175, 35, 100, "+opac+")";  //#F6812E
+			$("#w_"+Word2.index).addClass("linked").css({"background-color": color});						
+		}
+	}
+	
+}
+
+
+// sort selection by alphabet
+function sortByAlphabet(tobesorted) {	
+	if (lowercase) tobesorted = tobesorted.sort(function(a,b){
+		if (a.word<b.word) return -1; else return 1;
+	});
+	else tobesorted = tobesorted.sort(function(a,b){
+		if (a.word.toLowerCase()<b.word.toLowerCase()) return -1; else return 1;
+	});			
+
+}
+
+// display sentences containing active word
+function instances(showall) {
+	
+	if (typeof showall === "undefined") showall = false;
+	
+	var firstinstances = [];
+	
+	
+	var instancesInsert = "";
+	
+	// no selection
+	if (active.length==0) {
+		
+		instancesInsert += "<div>Select a word to see its context or drag a line between two words to compare them.</div>";
+		
+	}
+	// single word selection
+	else if (active.length==1) {
+		
+		var Word = Words[wordmap[active[0]]];
+		
+		var thereismore = false;
+		
+		for (var i=0; i < Word.instances.length; i+=1) {
+			
+			if (showall==false && i==snippetlimit) {
+				thereismore = true;
+				break;
+			}
+			
+			var w1  = Math.floor(Words[ wordmap[active[0]] ].width/2);
+			var w0  = Math.floor(1000-w1)/2;
+			
+			var insert = "<div class='left' style='width:"+w0+"px;'><span class='ellipsis'>…</span>";
+			
+			for (var j=0; j < Word.instances[i].length; j+=1) {
+								
+				// active word in the middle
+				if (Word.instances[i][j]==null) {
+					insert += "</div><div class='middle' style='width:"+w1+"px;'><span class='w_"+Word.index+"'>" + Word.word + "</span></div>";
+					insert += "<div class='right' style='width:"+w0+"px;'>";
+				}
+				else {
+					var Word2 = Words[Word.instances[i][j]];					
+					insert += "<span class='w_"+Word2.index+"'>" + Word2.word + "</span>";
+				}
+			}
+			
+			insert += "<span class='ellipsis'>…</span></div>"
+
+			instancesInsert += insert;
+		}
+		
+		// load more
+		if (thereismore) instancesInsert += "<div id='showall'><span>Show all "+Word.instances.length+" instances of this word</span></div>";
+		
+	}
+	// comparison
+	else if (active.length==2) {
+
+		var Word1 = Words[wordmap[active[0]]];
+		var Word2 = Words[wordmap[active[1]]];
+
+	}
+	
+	
+	if (showall==false) {
+		$("#instances").css({opacity: 0});		
+		var delay = 1000;
+	}
+	else var delay = 10;
+
+	setTimeout((function (instancesInsert) { return function(bar) {
+		$("#instances").html(instancesInsert);
+		
+		$("#instances").css({opacity: 1});
+		
+		// hover 
+		$("#instances div:not(#showall) span").hover(
+			function(){
+				var index = parseInt($(this).attr("class").split("w_")[1]);
+				hover(index);
+			},
+			function(){ hover(); }
+		);
+
+		// show more
+		$("#showall").click(function(){			
+			instances(true)	;
+		});
+
+		$("#instances div:not(#showall) span").click( function(){
+			var index = parseInt($(this).attr("class").split("w_")[1]);
+			var Word = Words[wordmap[index]];
+			
+			if (Word.exclude==false&&active[0]!=index) {
+				$(this).addClass('active');
+				
+				active = [index]
+				layout();
+			}
+		});
+
+	}; })(instancesInsert), delay);		
+	
+}
+	
+
+function interval(x, xmin, xmax, ymin, ymax, bound, log) {
+	// make sure return value is withiin ymin and ymax
+	if (typeof bound === "undefined") bound = false;
+	if (typeof log === "undefined") log = false;
+
+	// if (xmin==xmax) return (ymin+ymax)/2
+	if (xmin == xmax) return ymax;
+
+	var y, m, n;
+
+	if (log) {
+		var logxmax = Math.log(xmax+1);
+		var logxmin = Math.log(xmin+1);
+		m           = ( ymax / logxmax - ymin) / (1 - logxmin );
+		n           = ymin - m*logxmin;
+		y           = m * Math.log(x+1) + n;
+	}
+	else {
+		m           = (ymax - ymin) / (xmax - xmin);
+		n           = -xmin * m + ymin;
+		y           = x * m + n;		
+	}
+
+	if (bound) {
+		if (ymin<ymax) {
+			y          = Math.min(ymax, y);
+			y          = Math.max(ymin, y);
+		}
+		else {
+			y          = Math.max(ymax, y);
+			y          = Math.min(ymin, y);
+		}
+	}
+
+	return y;
+}
+	
+	
+	
+</script>
+</body>
+</html>
